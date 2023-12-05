@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">  
+    <title>Excel to HTML Table | Javacodepoint</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.min.js"></script> 
+    <link rel="stylesheet" href="style.css">
+</head> 
+  </head>
+  <body id="body">
+    <h1>我们一起练习HSK5吧！</h1>
+    <!-- Input element to upload an excel file 
+    <p id="upload">  
+    <input type="file" id="file_upload" value="excel_file_prova.xlsx"/>
+    <button onclick="upload()">Upload</button>  
+    </p>
+    -->
+    
+    <!-- table to display the excel data -->
+    <div id="container">
+      <table id="display_excel_data" border="1" value="ciao">
+      </table>
+    </div>
+    <div id="container">
+      <table id="punteggio" border="1" value="ciao">
+      </table>
+    </div>
+    <script>
+     
+      var json;
+      var random;
+      var punteggio = 0;
+      // Method to upload a valid excel file
+     /*
+      function upload() {
+       var files = document.getElementById('file_upload').files;
+        console.log(files[0]);
+        if(files.length==0){
+          alert("Please choose any file...");
+          return;
+        }
+        var filename = files[0].name;
+        var extension = filename.substring(filename.lastIndexOf(".")).toUpperCase();
+        if (extension == '.XLS' || extension == '.XLSX') {
+            //Here calling another method to read excel file into json
+            excelFileToJSON(files[0]);
+            document.getElementById('upload').remove(); 
+        }else{
+            alert("Please select a valid excel file.");
+        }
+      }
+      */
+
+      // Simula il caricamento automatico del file al caricamento della pagina
+      window.onload = function() {
+        // Specifica il percorso del file excel da caricare automaticamente
+        var automaticFilePath = 'excel_file_prova.xlsx';
+        simulateAutomaticFileUpload(automaticFilePath);
+      };
+
+      // Metodo per simulare il caricamento automatico del file
+      function simulateAutomaticFileUpload(filePath) {
+        try {
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', filePath, true);
+          xhr.responseType = 'blob';
+          xhr.onload = function () {
+            var file = new File([this.response], "excel_file_prova.xlsx");
+            excelFileToJSON(file);
+            document.getElementById('upload').remove(); 
+          };
+          xhr.send();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+     
+      //Method to read excel file and convert it into JSON 
+      function excelFileToJSON(file){
+          try {
+            var reader = new FileReader();
+            reader.readAsBinaryString(file);
+            reader.onload = function(e) {
+ 
+                var data = e.target.result;
+                var workbook = XLSX.read(data, {
+                    type : 'binary'
+                });
+                var result = {};
+                var firstSheetName = workbook.SheetNames[0];
+                //reading only first sheet data
+                var jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
+                //displaying the json result into HTML table
+                displayJsonToHtmlTable(jsonData);
+                json = jsonData;
+                }
+            }catch(e){
+                console.error(e);
+            }
+      }
+       
+
+      function validate(json){
+          document.getElementById('punteggio').innerHTML =  'Points: '+punteggio;
+          if((document.getElementById('pinyin').value.localeCompare(json[random]["Pinying"], undefined , { sensitivity: 'base' })==0)&&((document.getElementById('english').value.localeCompare(json[random]["English"], undefined, { sensitivity: 'base'})==0))){
+          document.getElementById('punteggio').setAttribute('bgcolor','green');
+          console.log('correct');
+          displayJsonToHtmlTable(json);
+          punteggio++;
+          document.getElementById('punteggio').innerHTML =  'Points: '+punteggio;
+
+          }
+          else
+          {
+          document.getElementById('punteggio').setAttribute('bgcolor','red');
+          console.log('not correct');
+          punteggio--;
+          document.getElementById('punteggio').innerHTML +='  '+  json[random]["Pinying"]+' , '+json[random]["English"];
+          }
+          
+
+          
+        }
+
+      //Method to display the data in HTML Table
+      function displayJsonToHtmlTable(jsonData){
+        var table=document.getElementById("display_excel_data");
+              
+           random = Math.floor(Math.random() * 2500);
+           var ch = jsonData[random]["Chinese"];
+           table.innerHTML='<h1>'+ch+'</h1>';
+           table.innerHTML+='<form> <label> Pinyin: </label> <input type="text" id="pinyin"> <br>';
+           table.innerHTML+='<label> English: </label> <input type="text" id="english"> <br>';
+           table.innerHTML+='<input id="validate" type="button" value="validate" onclick="validate(json)"> </form>';
+        
+      }
+    </script>
+  </body>
+</html>
